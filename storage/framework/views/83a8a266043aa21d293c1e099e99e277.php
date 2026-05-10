@@ -17,17 +17,19 @@
                 <tr>
                     <th>Waktu</th>
                     <th>Barang</th>
+                    <th>Gudang</th>
                     <th>Tipe</th>
                     <th>Jumlah</th>
                     <th>Oleh</th>
                     <th>Catatan</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 <?php $__currentLoopData = $transactions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $t): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <tr>
                     <td><?php echo e($t->created_at); ?></td>
                     <td><?php echo e($t->item->name); ?></td>
+                    <td><?php echo e($t->warehouse->name ?? '-'); ?></td>
                     <td>
                         <span class="badge bg-<?php echo e($t->type === 'in' ? 'success' : 'danger'); ?>">
                             <?php echo e(strtoupper($t->type)); ?>

@@ -12,7 +12,7 @@ class TransactionController extends Controller
 {
     public function index()
     {
-        $transactions = Transaction::with(['item', 'user'])->latest()->get();
+        $transactions = Transaction::with(['item', 'user', 'warehouse'])->latest()->get();
         $items = Item::orderBy('name')->get();
         return view('transactions.index', compact('transactions', 'items'));
     }
@@ -38,6 +38,7 @@ class TransactionController extends Controller
             Transaction::create([
                 'item_id' => $data['item_id'],
                 'user_id' => Auth::id(),
+                'warehouse_id' => $item->warehouse_id,
                 'type' => $data['type'],
                 'quantity' => $data['quantity'],
                 'note' => $data['note']

@@ -29,6 +29,9 @@
                             <a class="nav-link {{ request()->is('items*') ? 'active' : '' }}" href="{{ route('items.index') }}"><i class="bi bi-box me-2"></i> Barang</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->is('warehouses*') ? 'active' : '' }}" href="{{ route('warehouses.index') }}"><i class="bi bi-house me-2"></i> Gudang</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->is('categories*') ? 'active' : '' }}" href="{{ route('categories.index') }}"><i class="bi bi-tags me-2"></i> Kategori</a>
                         </li>
                         <li class="nav-item">

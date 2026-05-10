@@ -15,15 +15,21 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|unique:categories']);
-        Category::create($request->only('name'));
+        $request->validate([
+            'name' => 'required',
+            'code' => 'required|unique:categories'
+        ]);
+        Category::create($request->only('name', 'code'));
         return back()->with('success', 'Kategori berhasil ditambahkan.');
     }
 
     public function update(Request $request, Category $category)
     {
-        $request->validate(['name' => 'required|unique:categories,name,'.$category->id]);
-        $category->update($request->only('name'));
+        $request->validate([
+            'name' => 'required',
+            'code' => 'required|unique:categories,code,'.$category->id
+        ]);
+        $category->update($request->only('name', 'code'));
         return back()->with('success', 'Kategori berhasil diperbarui.');
     }
 

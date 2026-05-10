@@ -29,6 +29,9 @@
                             <a class="nav-link <?php echo e(request()->is('items*') ? 'active' : ''); ?>" href="<?php echo e(route('items.index')); ?>"><i class="bi bi-box me-2"></i> Barang</a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link <?php echo e(request()->is('warehouses*') ? 'active' : ''); ?>" href="<?php echo e(route('warehouses.index')); ?>"><i class="bi bi-house me-2"></i> Gudang</a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link <?php echo e(request()->is('categories*') ? 'active' : ''); ?>" href="<?php echo e(route('categories.index')); ?>"><i class="bi bi-tags me-2"></i> Kategori</a>
                         </li>
                         <li class="nav-item">
