@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Inventaris Laravel</title>
+    <title>Login - Inventaris Barang</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; }
@@ -14,7 +14,7 @@
     <div class="container login-container">
         <div class="card shadow">
             <div class="card-header bg-primary text-white text-center">
-                <h4>Inventaris Laravel</h4>
+                <h4>Inventaris Barang</h4>
             </div>
             <div class="card-body">
                 <?php if($errors->any()): ?>

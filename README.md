@@ -61,19 +61,26 @@ Sebelum memulai, pastikan Anda telah menginstal:
 
 ## Cara Instalasi (Menggunakan Docker)
 
-Aplikasi ini sudah dilengkapi dengan konfigurasi Docker.
+Aplikasi ini sudah dilengkapi dengan konfigurasi Docker (Apache, MySQL, phpMyAdmin, dan Redis).
 
 1.  **Build dan Jalankan Kontainer**
     ```bash
     docker-compose up -d --build
     ```
 
-2.  **Instal Dependensi (Di dalam Kontainer)**
+2.  **Instal Dependensi**
     ```bash
     docker exec -it laravel_app composer install
+    # Jika Anda menambah paket baru secara manual di composer.json, jalankan:
+    # docker exec -it laravel_app composer update
     ```
 
-3.  **Generate App Key**
+3.  **Fix Git Ownership (Jika ada error 'dubious ownership')**
+    ```bash
+    docker exec -it laravel_app git config --global --add safe.directory /var/www/html
+    ```
+
+4.  **Generate App Key**
     ```bash
     docker exec -it laravel_app php artisan key:generate
     ```
