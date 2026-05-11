@@ -17,7 +17,7 @@
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Kode</th>
                     <th>Nama Kategori</th>
                     @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                     <th class="text-end">Aksi</th>
@@ -27,11 +27,11 @@
             <tbody>
                 @foreach($categories as $cat)
                 <tr>
-                    <td>{{ $cat->id }}</td>
+                    <td><code>{{ $cat->code }}</code></td>
                     <td>{{ $cat->name }}</td>
                     @if(auth()->user()->isAdmin() || auth()->user()->isStaff())
                     <td class="text-end">
-                        <button class="btn btn-sm btn-warning" onclick="editCategory({{ $cat->id }}, '{{ $cat->name }}')" data-bs-toggle="modal" data-bs-target="#editCategoryModal">
+                        <button class="btn btn-sm btn-warning" onclick='editCategory(@json($cat))' data-bs-toggle="modal" data-bs-target="#editCategoryModal">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <form action="{{ route('categories.destroy', $cat->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Hapus kategori ini?')">
@@ -60,6 +60,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label">Kode Kategori</label>
+                        <input type="text" name="code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Nama Kategori</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
@@ -85,6 +89,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label">Kode Kategori</label>
+                        <input type="text" name="code" id="edit_code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Nama Kategori</label>
                         <input type="text" name="name" id="edit_name" class="form-control" required>
                     </div>
@@ -100,9 +108,10 @@
 
 @push('scripts')
 <script>
-function editCategory(id, name) {
-    document.getElementById('editForm').action = '/categories/' + id;
-    document.getElementById('edit_name').value = name;
+function editCategory(cat) {
+    document.getElementById('editForm').action = '/categories/' + cat.id;
+    document.getElementById('edit_code').value = cat.code;
+    document.getElementById('edit_name').value = cat.name;
 }
 </script>
 @endpush

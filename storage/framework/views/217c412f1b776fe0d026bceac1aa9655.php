@@ -18,6 +18,7 @@
                     <th>SKU</th>
                     <th>Nama</th>
                     <th>Kategori</th>
+                    <th>Gudang</th>
                     <th>Stok</th>
                     <th>Harga</th>
                     <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
@@ -31,6 +32,7 @@
                     <td><code><?php echo e($item->sku); ?></code></td>
                     <td><?php echo e($item->name); ?></td>
                     <td><?php echo e($item->category->name ?? '-'); ?></td>
+                    <td><?php echo e($item->warehouse->name ?? '-'); ?></td>
                     <td>
                         <span class="badge bg-<?php echo e($item->stock < 10 ? 'danger' : 'success'); ?>">
                             <?php echo e($item->stock); ?>
@@ -52,6 +54,9 @@
                     <?php endif; ?>
                 </tr>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                <?php if($items->isEmpty()): ?>
+                    <tr><td colspan="7" class="text-center">Belum ada barang.</td></tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
@@ -73,8 +78,8 @@
                         <input type="text" name="name" class="form-control" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">SKU</label>
-                        <input type="text" name="sku" class="form-control" required>
+                        <label class="form-label">SKU (Biarkan kosong untuk generate otomatis)</label>
+                        <input type="text" name="sku" class="form-control" placeholder="Contoh: GDG-CAT-0001">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori</label>
@@ -82,6 +87,15 @@
                             <option value="">-- Pilih Kategori --</option>
                             <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <option value="<?php echo e($cat->id); ?>"><?php echo e($cat->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Gudang</label>
+                        <select name="warehouse_id" class="form-select">
+                            <option value="">-- Pilih Gudang --</option>
+                            <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($w->id); ?>"><?php echo e($w->name); ?></option>
                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </select>
                     </div>
@@ -132,6 +146,15 @@
                         </select>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label">Gudang</label>
+                        <select name="warehouse_id" id="edit_item_warehouse_id" class="form-select">
+                            <option value="">-- Pilih Gudang --</option>
+                            <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($w->id); ?>"><?php echo e($w->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Harga</label>
                         <input type="number" name="price" id="edit_item_price" class="form-control" step="0.01">
                     </div>
@@ -156,6 +179,7 @@ function editItem(item) {
     document.getElementById('edit_item_name').value = item.name;
     document.getElementById('edit_item_sku').value = item.sku;
     document.getElementById('edit_item_category_id').value = item.category_id || '';
+    document.getElementById('edit_item_warehouse_id').value = item.warehouse_id || '';
     document.getElementById('edit_item_price').value = item.price;
     document.getElementById('edit_item_description').value = item.description;
 }

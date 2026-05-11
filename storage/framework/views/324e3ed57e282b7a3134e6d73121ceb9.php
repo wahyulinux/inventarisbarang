@@ -15,7 +15,7 @@
         <table class="table table-striped mb-0">
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>Kode</th>
                     <th>Nama Kategori</th>
                     <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
                     <th class="text-end">Aksi</th>
@@ -25,11 +25,11 @@
             <tbody>
                 <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <tr>
-                    <td><?php echo e($cat->id); ?></td>
+                    <td><code><?php echo e($cat->code); ?></code></td>
                     <td><?php echo e($cat->name); ?></td>
                     <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
                     <td class="text-end">
-                        <button class="btn btn-sm btn-warning" onclick="editCategory(<?php echo e($cat->id); ?>, '<?php echo e($cat->name); ?>')" data-bs-toggle="modal" data-bs-target="#editCategoryModal">
+                        <button class="btn btn-sm btn-warning" onclick='editCategory(<?php echo json_encode($cat, 15, 512) ?>)' data-bs-toggle="modal" data-bs-target="#editCategoryModal">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <form action="<?php echo e(route('categories.destroy', $cat->id)); ?>" method="POST" class="d-inline" onsubmit="return confirm('Hapus kategori ini?')">
@@ -58,6 +58,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label">Kode Kategori</label>
+                        <input type="text" name="code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Nama Kategori</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
@@ -83,6 +87,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label">Kode Kategori</label>
+                        <input type="text" name="code" id="edit_code" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Nama Kategori</label>
                         <input type="text" name="name" id="edit_name" class="form-control" required>
                     </div>
@@ -98,9 +106,10 @@
 
 <?php $__env->startPush('scripts'); ?>
 <script>
-function editCategory(id, name) {
-    document.getElementById('editForm').action = '/categories/' + id;
-    document.getElementById('edit_name').value = name;
+function editCategory(cat) {
+    document.getElementById('editForm').action = '/categories/' + cat.id;
+    document.getElementById('edit_code').value = cat.code;
+    document.getElementById('edit_name').value = cat.name;
 }
 </script>
 <?php $__env->stopPush(); ?>

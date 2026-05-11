@@ -19,17 +19,19 @@
                 <tr>
                     <th>Waktu</th>
                     <th>Barang</th>
+                    <th>Gudang</th>
                     <th>Tipe</th>
                     <th>Jumlah</th>
                     <th>Oleh</th>
                     <th>Catatan</th>
                 </tr>
-            </thead>
-            <tbody>
+                </thead>
+                <tbody>
                 @foreach($transactions as $t)
                 <tr>
                     <td>{{ $t->created_at }}</td>
                     <td>{{ $t->item->name }}</td>
+                    <td>{{ $t->warehouse->name ?? '-' }}</td>
                     <td>
                         <span class="badge bg-{{ $t->type === 'in' ? 'success' : 'danger' }}">
                             {{ strtoupper($t->type) }}
