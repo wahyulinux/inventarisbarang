@@ -57,6 +57,10 @@
                     <i class="bi bi-people mr-3"></i> Kelola User
                 </a>
                 <?php endif; ?>
+
+                <a href="<?php echo e(route('password.edit')); ?>" class="flex items-center px-4 py-3 rounded-lg transition <?php echo e(request()->is('password*') ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-slate-800 hover:text-white'); ?>">
+                    <i class="bi bi-shield-lock mr-3"></i> Ganti Password
+                </a>
                 
                 <div class="pt-10">
                     <form action="<?php echo e(route('logout')); ?>" method="POST" id="logout-form">
