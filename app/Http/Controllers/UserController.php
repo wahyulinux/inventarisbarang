@@ -10,8 +10,9 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::orderBy('username')->get();
-        return view('users.index', compact('users'));
+        $users = User::with('warehouse')->orderBy('username')->get();
+        $warehouses = \App\Models\Warehouse::orderBy('name')->get();
+        return view('users.index', compact('users', 'warehouses'));
     }
 
     public function store(Request $request)
@@ -20,7 +21,8 @@ class UserController extends Controller
             'name' => 'required',
             'username' => 'required|unique:users',
             'password' => 'required|min:6',
-            'role' => 'required|in:admin,staff,manager'
+            'role' => 'required|in:admin,staff,manager',
+            'warehouse_id' => 'nullable|exists:warehouses,id'
         ]);
         $data['password'] = Hash::make($data['password']);
         User::create($data);
@@ -33,7 +35,8 @@ class UserController extends Controller
             'name' => 'required',
             'username' => 'required|unique:users,username,'.$user->id,
             'password' => 'nullable|min:6',
-            'role' => 'required|in:admin,staff,manager'
+            'role' => 'required|in:admin,staff,manager',
+            'warehouse_id' => 'nullable|exists:warehouses,id'
         ]);
 
         if ($request->filled('password')) {

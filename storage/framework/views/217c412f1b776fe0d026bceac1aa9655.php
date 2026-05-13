@@ -1,190 +1,238 @@
 <?php $__env->startSection('title', 'Kelola Barang'); ?>
 
 <?php $__env->startSection('content'); ?>
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Daftar Barang</h3>
-    <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">
-        <i class="bi bi-plus-lg"></i> Tambah Barang
-    </button>
-    <?php endif; ?>
-</div>
+<div x-data="{ 
+    openModal: false, 
+    editMode: false,
+    item: { id: '', name: '', sku: '', category_id: '', warehouse_id: '<?php echo e(auth()->user()->warehouse_id); ?>', description: '' },
+    openEdit(data) {
+        this.item = { ...data };
+        this.editMode = true;
+        this.openModal = true;
+    },
+    openAdd() {
+        this.item = { id: '', name: '', sku: '', category_id: '', warehouse_id: '<?php echo e(auth()->user()->warehouse_id); ?>', description: '' };
+        this.editMode = false;
+        this.openModal = true;
+    }
+}">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h3 class="text-xl font-bold text-gray-800">Daftar Barang</h3>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <a href="<?php echo e(route('items.print', request()->query())); ?>" target="_blank" class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                <i class="bi bi-printer mr-2"></i> Cetak
+            </a>
+            <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
+            <button @click="openAdd()" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition shadow-sm w-full md:w-auto">
+                <i class="bi bi-plus-lg mr-2"></i> Tambah Barang
+            </button>
+            <?php endif; ?>
+        </div>
+    </div>
 
-<div class="card">
-    <div class="card-body p-0 table-responsive">
-        <table class="table table-striped mb-0">
-            <thead>
-                <tr>
-                    <th>SKU</th>
-                    <th>Nama</th>
-                    <th>Kategori</th>
-                    <th>Gudang</th>
-                    <th>Stok</th>
-                    <th>Harga</th>
-                    <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
-                    <th class="text-end">Aksi</th>
+    <!-- Filter Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <form action="<?php echo e(route('items.index')); ?>" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Filter Gudang</label>
+                <select name="warehouse_id" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Gudang</option>
+                    <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($w->id); ?>" <?php echo e(request('warehouse_id') == $w->id ? 'selected' : ''); ?>>
+                        <?php echo e($w->name); ?>
+
+                    </option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </div>
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">Filter Kategori</label>
+                <select name="category_id" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Semua Kategori</option>
+                    <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($cat->id); ?>" <?php echo e(request('category_id') == $cat->id ? 'selected' : ''); ?>>
+                        <?php echo e($cat->name); ?>
+
+                    </option>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </select>
+            </div>
+            <div class="flex items-end gap-2 md:col-span-2">
+                <button type="submit" class="inline-flex justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition w-full md:w-auto">
+                    Filter
+                </button>
+                <a href="<?php echo e(route('items.index')); ?>" class="inline-flex justify-center px-4 py-2 bg-gray-100 border border-transparent rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200 transition w-full md:w-auto">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">SKU</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kategori</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Gudang</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stok</th>
+                        <?php if((auth()->user()->isAdmin() || auth()->user()->isStaff()) && !auth()->user()->warehouse_id): ?>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <?php endif; ?>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php $__empty_1 = true; $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                            <?php echo e($item->sku); ?>
+
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <?php echo e($item->name); ?>
+
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <?php echo e($item->category->name ?? '-'); ?>
+
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <?php echo e($item->warehouse->name ?? '-'); ?>
+
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <?php if($item->stock <= 0): ?>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200">
+                                    <span class="w-2.5 h-2.5 mr-2 bg-red-600 rounded-full animate-pulse"></span>
+                                    <span class="text-lg font-black mr-2">0</span>
+                                    <span class="text-xs font-bold uppercase tracking-wider opacity-70">Habis</span>
+                                </span>
+                            <?php elseif($item->stock < 5): ?>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200">
+                                    <span class="w-2.5 h-2.5 mr-2 bg-orange-500 rounded-full"></span>
+                                    <span class="text-lg font-black mr-2"><?php echo e($item->stock); ?></span>
+                                    <span class="text-xs font-bold uppercase tracking-wider opacity-70">Kritis</span>
+                                </span>
+                            <?php elseif($item->stock < 10): ?>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-yellow-50 text-yellow-700 border border-yellow-200">
+                                    <span class="w-2.5 h-2.5 mr-2 bg-yellow-500 rounded-full"></span>
+                                    <span class="text-lg font-black mr-2"><?php echo e($item->stock); ?></span>
+                                    <span class="text-xs font-bold uppercase tracking-wider opacity-70">Menipis</span>
+                                </span>
+                            <?php else: ?>
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="w-2.5 h-2.5 mr-2 bg-emerald-500 rounded-full"></span>
+                                    <span class="text-lg font-black mr-2"><?php echo e($item->stock); ?></span>
+                                    <span class="text-xs font-bold uppercase tracking-wider opacity-70">Banyak</span>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                        <?php if((auth()->user()->isAdmin() || auth()->user()->isStaff()) && !auth()->user()->warehouse_id): ?>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                            <button @click='openEdit(<?php echo json_encode($item, 15, 512) ?>)' class="text-yellow-600 hover:text-yellow-900 bg-yellow-100 p-2 rounded-lg transition">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <form action="<?php echo e(route('items.destroy', $item->id)); ?>" method="POST" class="inline" onsubmit="return confirm('Hapus barang ini?')">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('DELETE'); ?>
+                                <button type="submit" class="text-red-600 hover:text-red-900 bg-red-100 p-2 rounded-lg transition">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                        <?php endif; ?>
+                    </tr>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-500 italic">
+                            Belum ada data barang.
+                        </td>
+                    </tr>
                     <?php endif; ?>
-                </tr>
-            </thead>
-            <tbody>
-                <?php $__currentLoopData = $items; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <tr>
-                    <td><code><?php echo e($item->sku); ?></code></td>
-                    <td><?php echo e($item->name); ?></td>
-                    <td><?php echo e($item->category->name ?? '-'); ?></td>
-                    <td><?php echo e($item->warehouse->name ?? '-'); ?></td>
-                    <td>
-                        <span class="badge bg-<?php echo e($item->stock < 10 ? 'danger' : 'success'); ?>">
-                            <?php echo e($item->stock); ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
-                        </span>
-                    </td>
-                    <td>Rp <?php echo e(number_format($item->price, 0, ',', '.')); ?></td>
-                    <?php if(auth()->user()->isAdmin() || auth()->user()->isStaff()): ?>
-                    <td class="text-end">
-                        <button class="btn btn-sm btn-warning" onclick='editItem(<?php echo json_encode($item, 15, 512) ?>)' data-bs-toggle="modal" data-bs-target="#editItemModal">
-                            <i class="bi bi-pencil"></i>
+    <!-- Modal Form (Add/Edit) -->
+    <div x-show="openModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div x-show="openModal" @click="openModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+            
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+
+            <div x-show="openModal" 
+                 class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <form :action="editMode ? '/items/' + item.id : '<?php echo e(route('items.store')); ?>'" method="POST">
+                    <?php echo csrf_field(); ?>
+                    <template x-if="editMode">
+                        <?php echo method_field('PUT'); ?>
+                    </template>
+                    
+                    <div class="bg-white px-6 pt-6 pb-4 sm:p-6 sm:pb-4">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-gray-900" x-text="editMode ? 'Edit Barang' : 'Tambah Barang'"></h3>
+                            <button type="button" @click="openModal = false" class="text-gray-400 hover:text-gray-500">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Nama Barang</label>
+                                <input type="text" name="name" x-model="item.name" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">SKU</label>
+                                <input type="text" name="sku" x-model="item.sku" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Biarkan kosong untuk generate otomatis">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Kategori</label>
+                                    <select name="category_id" x-model="item.category_id" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="">-- Pilih Kategori --</option>
+                                        <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($cat->id); ?>"><?php echo e($cat->name); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-gray-700 text-sm font-bold mb-2">Gudang</label>
+                                    <select name="warehouse_id" x-model="item.warehouse_id" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 <?php echo e(auth()->user()->warehouse_id ? 'bg-gray-100 cursor-not-allowed' : ''); ?>" <?php echo e(auth()->user()->warehouse_id ? 'disabled' : ''); ?>>
+                                        <option value="">-- Pilih Gudang --</option>
+                                        <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <option value="<?php echo e($w->id); ?>" <?php echo e(auth()->user()->warehouse_id == $w->id ? 'selected' : ''); ?>><?php echo e($w->name); ?></option>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    </select>
+                                    <?php if(auth()->user()->warehouse_id): ?>
+                                        <input type="hidden" name="warehouse_id" value="<?php echo e(auth()->user()->warehouse_id); ?>">
+                                        <p class="text-xs text-gray-500 mt-1">* Otomatis ke gudang Anda</p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 text-sm font-bold mb-2">Deskripsi</label>
+                                <textarea name="description" x-model="item.description" class="w-full px-3 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3">
+                        <button type="submit" class="inline-flex justify-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 transition shadow-sm">
+                            Simpan
                         </button>
-                        <form action="<?php echo e(route('items.destroy', $item->id)); ?>" method="POST" class="d-inline" onsubmit="return confirm('Hapus barang ini?')">
-                            <?php echo csrf_field(); ?>
-                            <?php echo method_field('DELETE'); ?>
-                            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
-                        </form>
-                    </td>
-                    <?php endif; ?>
-                </tr>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                <?php if($items->isEmpty()): ?>
-                    <tr><td colspan="7" class="text-center">Belum ada barang.</td></tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<!-- Modals for Add/Edit Items -->
-<div class="modal fade" id="addItemModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form action="<?php echo e(route('items.store')); ?>" method="POST">
-                <?php echo csrf_field(); ?>
-                <div class="modal-header">
-                    <h5 class="modal-title">Tambah Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Barang</label>
-                        <input type="text" name="name" class="form-control" required>
+                        <button type="button" @click="openModal = false" class="inline-flex justify-center px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm">
+                            Batal
+                        </button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">SKU (Biarkan kosong untuk generate otomatis)</label>
-                        <input type="text" name="sku" class="form-control" placeholder="Contoh: GDG-CAT-0001">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kategori</label>
-                        <select name="category_id" class="form-select">
-                            <option value="">-- Pilih Kategori --</option>
-                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($cat->id); ?>"><?php echo e($cat->name); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Gudang</label>
-                        <select name="warehouse_id" class="form-select">
-                            <option value="">-- Pilih Gudang --</option>
-                            <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($w->id); ?>"><?php echo e($w->name); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harga</label>
-                        <input type="number" name="price" class="form-control" step="0.01">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea name="description" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="editItemModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editItemForm" method="POST">
-                <?php echo csrf_field(); ?>
-                <?php echo method_field('PUT'); ?>
-                <div class="modal-header">
-                    <h5 class="modal-title">Edit Barang</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Nama Barang</label>
-                        <input type="text" name="name" id="edit_item_name" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">SKU</label>
-                        <input type="text" name="sku" id="edit_item_sku" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kategori</label>
-                        <select name="category_id" id="edit_item_category_id" class="form-select">
-                            <option value="">-- Pilih Kategori --</option>
-                            <?php $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $cat): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($cat->id); ?>"><?php echo e($cat->name); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Gudang</label>
-                        <select name="warehouse_id" id="edit_item_warehouse_id" class="form-select">
-                            <option value="">-- Pilih Gudang --</option>
-                            <?php $__currentLoopData = $warehouses; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $w): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($w->id); ?>"><?php echo e($w->name); ?></option>
-                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Harga</label>
-                        <input type="number" name="price" id="edit_item_price" class="form-control" step="0.01">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Deskripsi</label>
-                        <textarea name="description" id="edit_item_description" class="form-control"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<?php $__env->startPush('scripts'); ?>
-<script>
-function editItem(item) {
-    document.getElementById('editItemForm').action = '/items/' + item.id;
-    document.getElementById('edit_item_name').value = item.name;
-    document.getElementById('edit_item_sku').value = item.sku;
-    document.getElementById('edit_item_category_id').value = item.category_id || '';
-    document.getElementById('edit_item_warehouse_id').value = item.warehouse_id || '';
-    document.getElementById('edit_item_price').value = item.price;
-    document.getElementById('edit_item_description').value = item.description;
-}
-</script>
-<?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /var/www/html/resources/views/items/index.blade.php ENDPATH**/ ?>

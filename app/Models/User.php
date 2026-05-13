@@ -9,13 +9,18 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'username', 'password', 'role'];
+    protected $fillable = ['name', 'username', 'password', 'role', 'warehouse_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         // 'password' => 'hashed',
     ];
+
+    public function warehouse()
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
 
     public function transactions()
     {

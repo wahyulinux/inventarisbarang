@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Items
     Route::get('/items', [ItemController::class, 'index'])->name('items.index');
+    Route::get('/items/print', [ItemController::class, 'print'])->name('items.print');
     Route::middleware(['role:admin,staff'])->group(function () {
         Route::post('/items', [ItemController::class, 'store'])->name('items.store');
         Route::put('/items/{item}', [ItemController::class, 'update'])->name('items.update');
@@ -46,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/print', [TransactionController::class, 'print'])->name('transactions.print');
     Route::middleware(['role:admin,staff'])->group(function () {
         Route::post('/transactions', [TransactionController::class, 'store'])->name('transactions.store');
     });

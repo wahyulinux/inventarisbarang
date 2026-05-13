@@ -9,6 +9,10 @@ class WarehouseController extends Controller
 {
     public function index()
     {
+        if (auth()->user()->warehouse_id) {
+            return abort(403, 'Anda tidak memiliki akses ke menu pengelolaan gudang.');
+        }
+
         $warehouses = Warehouse::orderBy('name')->get();
         return view('warehouses.index', compact('warehouses'));
     }
