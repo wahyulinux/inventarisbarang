@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app_prod
+    restart: unless-stopped
+    ports:
+      # Expose ke port 8080 lokal server. Nanti diarahkan menggunakan Nginx (Reverse Proxy) ke domain utama
+      - "127.0.0.1:8080:80"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    # Tidak ada volume mounting kode sumber di production untuk keamanan.
+    # Hanya mount folder yang isinya berubah/diupload user (misal: storage/app/public) jika diperlukan.
+    volumes:
+      - storage_data:/var/www/html/storage/app/public
+
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db_prod
+    restart: unless-stopped
+    env_file:
+      - .env
+    # PORT TIDAK DIEKSPOS ke luar. Hanya bisa diakses oleh 'app' dalam satu network Docker.
+    volumes:
+      - pg_data_prod:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    container_name: redis_storage_prod
+    restart: unless-stopped
+    # PORT TIDAK DIEKSPOS ke luar.
+
+volumes:
+  pg_data_prod:
+  storage_data:

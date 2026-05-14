@@ -1,130 +1,101 @@
-<<<<<<< HEAD
-Ringkasan Fitur:
-   1. Multi-Role Auth: Admin, Staff, dan Manager dengan pembatasan akses yang ketat.
-   2. Manajemen Gudang: Pengelolaan banyak lokasi penyimpanan dengan kode unik.
-   3. Manajemen Kategori: Pengelompokan barang berdasarkan kategori dengan kode unik.
-   4. Manajemen Barang: Data barang lengkap dengan harga dan stok.
-   5. SKU Otomatis: Generator SKU cerdas berdasarkan kombinasi Kode Gudang, Kode Kategori, dan nomor urut.
-   6. Transaksi Stok: Riwayat barang masuk/keluar yang otomatis memperbarui stok barang.
-   7. Dashboard Informatif: Ringkasan data dan peringatan stok rendah.
-   8. Infrastructure: Sudah terkonfigurasi dengan Docker (App, DB, phpMyAdmin).
+# Sistem Inventaris Barang (Laravel Docker)
 
-  Detail Akses:
-   * Aplikasi: http://localhost:8080
-   * phpMyAdmin: http://localhost:8081 (Host: db, User: root, Pass: root_password)
-   * Login Admin: admin / admin123
-=======
-# Sistem Inventaris Barang (Laravel)
+Aplikasi manajemen inventaris barang yang dibangun dengan Laravel 10+, PostgreSQL, dan Redis, dibungkus menggunakan Docker untuk kemudahan deployment.
 
-Aplikasi manajemen inventaris barang sederhana yang dibangun menggunakan Laravel 10.
-
-## Prasyarat (Prerequisites)
-
-Sebelum memulai, pastikan Anda telah menginstal:
-- PHP >= 8.1
-- Composer
-- MySQL atau MariaDB
-- Docker & Docker Compose (Opsional, untuk instalasi via Docker)
+## Prasyarat
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+- [Git](https://git-scm.com/)
 
 ---
 
-## Cara Instalasi (Lokal Tanpa Docker)
+## 🛠 Panduan Development (Lokal)
 
-1.  **Clone Repositori**
-    ```bash
-    git clone <url-repositori>
-    cd inventarisbarang
-    ```
+Gunakan metode ini jika Anda ingin mengembangkan aplikasi di komputer lokal. Perubahan kode akan langsung terlihat (hot-reload) tanpa perlu build ulang.
 
-2.  **Instal Dependensi**
-    ```bash
-    composer install
-    ```
+1. **Clone Repository:**
+   ```bash
+   git clone <url-repository> inventaris-app
+   cd inventaris-app
+   ```
 
-3.  **Pengaturan Environment**
-    Salin file `.env.example` menjadi `.env`:
-    ```bash
-    cp .env.example .env
-    ```
-    Buka file `.env` dan sesuaikan pengaturan database Anda:
-    ```env
-    DB_CONNECTION=mysql
-    DB_HOST=127.0.0.1
-    DB_PORT=3306
-    DB_DATABASE=inventory_db
-    DB_USERNAME=root
-    DB_PASSWORD=
-    ```
+2. **Persiapan Environment:**
+   ```bash
+   cp .env.example .env
+   ```
 
-4.  **Generate App Key**
-    ```bash
-    php artisan key:generate
-    ```
+3. **Jalankan Container:**
+   ```bash
+   docker-compose up -d --build
+   ```
 
-5.  **Migrasi dan Seed Data**
-    Pastikan database `inventory_db` sudah dibuat di MySQL Anda, lalu jalankan:
-    ```bash
-    php artisan migrate --seed
-    ```
+4. **Instalasi Awal:**
+   ```bash
+   docker-compose exec app composer install
+   docker-compose exec app php artisan key:generate
+   docker-compose exec app php artisan migrate --seed
+   ```
 
-6.  **Jalankan Server**
-    ```bash
-    php artisan serve
-    ```
-    Aplikasi dapat diakses di `http://localhost:8000`.
+5. **Akses Aplikasi:**
+   - **Aplikasi:** [http://localhost:8080](http://localhost:8080)
+   - **Database (PostgreSQL):** `localhost:5432`
 
 ---
 
-## Cara Instalasi (Menggunakan Docker)
+## 🚀 Panduan Deployment (Production)
 
-Aplikasi ini sudah dilengkapi dengan konfigurasi Docker (Apache, MySQL, phpMyAdmin, dan Redis).
+Gunakan metode ini untuk mendeploy di server VPS. Kode akan "dibakar" langsung ke dalam image Docker untuk keamanan dan performa maksimal.
 
-1.  **Build dan Jalankan Kontainer**
-    ```bash
-    docker-compose up -d --build
-    ```
+1. **Clone & Persiapan di Server:**
+   ```bash
+   git clone <url-repository> inventaris-app
+   cd inventaris-app
+   cp .env.example .env
+   ```
+   *Edit `.env` dan sesuaikan `APP_ENV=production`, `APP_DEBUG=false`, serta password database.*
 
-2.  **Instal Dependensi**
-    ```bash
-    docker exec -it laravel_app composer install
-    # Jika Anda menambah paket baru secara manual di composer.json, jalankan:
-    # docker exec -it laravel_app composer update
-    ```
+2. **Build & Jalankan (Production Mode):**
+   ```bash
+   docker-compose -f docker-compose.prod.yml up -d --build
+   ```
 
-3.  **Fix Git Ownership (Jika ada error 'dubious ownership')**
-    ```bash
-    docker exec -it laravel_app git config --global --add safe.directory /var/www/html
-    ```
+3. **Setup Awal (Hanya sekali):**
+   ```bash
+   docker-compose -f docker-compose.prod.yml exec app php artisan key:generate
+   docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force --seed
+   ```
 
-4.  **Generate App Key**
-    ```bash
-    docker exec -it laravel_app php artisan key:generate
-    ```
-
-4.  **Migrasi dan Seed Data**
-    ```bash
-    docker exec -it laravel_app php artisan migrate --seed
-    ```
-
-5.  **Akses Aplikasi**
-    - **Aplikasi:** [http://localhost:8080](http://localhost:8080)
-    - **phpMyAdmin:** [http://localhost:8081](http://localhost:8081)
+4. **Optimasi Laravel:**
+   ```bash
+   docker-compose -f docker-compose.prod.yml exec app php artisan config:cache
+   docker-compose -f docker-compose.prod.yml exec app php artisan route:cache
+   docker-compose -f docker-compose.prod.yml exec app php artisan view:cache
+   ```
 
 ---
 
-## Akun Login Default (Seed)
+## 📋 Perintah Penting (Cheat Sheet)
 
-Jika Anda menjalankan `--seed`, Anda dapat masuk menggunakan akun administrator default:
-- **Username:** `admin`
-- **Password:** `admin123`
+### Management Container
+- **Melihat Log:** `docker-compose logs -f app`
+- **Menghentikan Container:** `docker-compose down`
+- **Masuk ke Terminal Container:** `docker-compose exec app bash`
 
-## Struktur Database Penting
-- `categories`: Kategori barang.
-- `items`: Data barang.
-- `warehouses`: Data gudang.
-- `transactions`: Riwayat keluar masuk barang.
-- `users`: Data pengguna (Admin/Staff).
+### Laravel Artisan (via Docker)
+Selalu jalankan perintah artisan melalui container `app`.
+- **Reset Database:** `docker-compose exec app php artisan migrate:fresh --seed`
+- **Clear Cache:** `docker-compose exec app php artisan cache:clear`
 
-## Lisensi
-Aplikasi ini menggunakan lisensi MIT.
->>>>>>> feature/tambahgudang
+### Cara Update Aplikasi di Production
+Jika ada perubahan kode di repository:
+```bash
+git pull origin main
+docker-compose -f docker-compose.prod.yml up -d --build
+docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force
+```
+
+---
+
+## Layanan yang Tersedia
+- **PHP 8.1 Apache** (Service: `app`)
+- **PostgreSQL 15** (Service: `db`)
+- **Redis Alpine** (Service: `redis`)
